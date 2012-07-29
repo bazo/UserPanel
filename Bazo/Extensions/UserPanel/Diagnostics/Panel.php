@@ -181,7 +181,7 @@ class Panel extends Control implements IBarPanel
 	public function getCredentialsRadioData()
 	{
 		$data = array();
-		foreach ($this->credentialsProvider->getCredentials() as $username => $password) {
+		foreach ($this->credentialsProvider as $username => $password) {
 			$data[$username] = $username;
 		}
 		$data['__guest'] = 'guest';
