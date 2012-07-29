@@ -29,6 +29,8 @@ class Panel extends Control implements IBarPanel
 	/** @var string */
 	private $userColumn = 'username';
 
+	/** @var \Nette\Application\UI\Presenter */
+	private $presenter;
 
 
 	/**
@@ -36,8 +38,9 @@ class Panel extends Control implements IBarPanel
 	 */
 	public function __construct()
 	{
-		parent::__construct(Environment::getApplication()->presenter, 'UserPanel');
-		if (Environment::getApplication()->presenter === NULL) {
+		$this->presenter = $presenter = Environment::getApplication()->presenter;
+		parent::__construct($presenter, 'UserPanel');
+		if ($presenter === NULL) {
 			throw new \LogicException('UserPanel must be registered in BasePresenter::startup(), not in bootstrap.');
 		}
 		$this->user = Environment::getUser();
@@ -52,7 +55,7 @@ class Panel extends Control implements IBarPanel
 	 */
 	public function getTab()
 	{
-		$data = $this->getData();
+		//$data = $this->getData();
 		return '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAnpJREFUeNqEU19IU1EY/927e52bWbaMQLbJwmgP0zIpffDFUClsyF56WJBQkv1RyJeo2IMPEghRQeAIoscegpBqTy6y3CDwrdzDwjCVkdqmzT+7u//O1jm3knkV/MF3z3e+8zu/7zv3O4crFotgaHC7jfHrwgKuBYPtVqt1BBx3SlNV5HK5KSmXu/N6fPxTKY+BMwvUNzY22cvFz6TIi0TXoWkaFEWBrkra+rrUtJLJTJcKCDCBZrqvyBaRCTMBnRCwKhRZFlVFuUspl0r5OwRUKXu+opxgsP8qfE4Bmk7wZV7Bg5FRqIR0m/m8OfA7K9n6bt1GvbeWlq2CKxCcPnEM1wf6sZknFXsKDF+c+dHgVKBmf4JoqmHMb/Va8OTK4vSeAhThpW9vwdsPociJ1ATD/zU7bqyZyVtdKMWHIXH0SJ3/RrWn05hn5t5jeeZN+OyQdtPMFbA77i1/f9dE7cy/+RS10G7EbRX4fL42OvQGAoFgT6uM2uPnjHhq9iNeTABjY2Mv6fR5IpGY2Cbg9XqPUr/PZrMNOJ1Oq65pfCQSwcPwK1TtE9F7OYCurgsQRbGQSqWUfD7/lPKfJZPJWc7j8ZzkeX7S5XLZHA6HIEkSqBCam5uxYqnDwf02WDeTiMVikGUZdrsdq6urOhWSCSGdFhoIud3ulrKyMiGbzRrXVqX9j8fj8Pu7UXO4EiPDIZYdNDN7F6DvhKf7+HQ6bRGoaju970bm/2CZmCXn0nAcyBn+xsbG1joTooJsbxv71LDNhUJh299lpPnFNaxt/hVjlZWCPTIar+YEQXhEzzxobk9HRyeWrC2oqhRRnplENBrd0UKa5PEfAQYAH6s95RSa3ooAAAAASUVORK5CYII=">' .
 			($this->user->isLoggedIn() ? 'Logged as <span style="font-style: italic; margin: 0; padding: 0;">' . $this->getUsername() . '</span>' : 'Guest');
 	}
@@ -66,7 +69,6 @@ class Panel extends Control implements IBarPanel
 	 */
 	public function getPanel()
 	{
-		ob_start();
 		$template = parent::getTemplate();
 
 		$data = $this->getData();
@@ -85,9 +87,7 @@ class Panel extends Control implements IBarPanel
 		$template->data = $data;
 		$template->userColumn = $this->userColumn;
 		$template->username = $this->getUsername();
-		$template->render();
-
-		return ob_get_clean();
+		$template->__toString();
 	}
 
 
@@ -153,8 +153,6 @@ class Panel extends Control implements IBarPanel
 		return $this;
 	}
 
-
-
 	/**
 	 * Sets which $user->identity->data column is supposed to be username
 	 * @param string $column
@@ -165,8 +163,6 @@ class Panel extends Control implements IBarPanel
 		$this->userColumn = $column;
 		return $this;
 	}
-
-
 
 	/**
 	 * Returns value => name arrray for filling radio list and add __guest
@@ -190,9 +186,9 @@ class Panel extends Control implements IBarPanel
 	 * Sign in form component factory.
 	 * @return Nette\Application\AppForm
 	 */
-	public function createComponentLogin($name)
+	public function createComponentLogin()
 	{
-		$form = new Form($this, $name);
+		$form = new Form();
 
 		$form->addRadioList('user', NULL, $this->getCredentialsRadioData())
 			->setAttribute('class', 'onClickSubmit');
@@ -222,7 +218,7 @@ class Panel extends Control implements IBarPanel
 
 			$this->redirect('this');
 		} catch (AuthenticationException $e) {
-			Environment::getApplication()->presenter->flashMessage($e->getMessage(), 'error');
+			$this->presenter->flashMessage($e->getMessage(), 'error');
 			$this->redirect('this');
 		}
 	}
