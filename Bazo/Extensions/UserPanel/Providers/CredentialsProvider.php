@@ -4,6 +4,6 @@ namespace Bazo\Extensions\UserPanel\Providers;
  *
  * @author Martin Bazik
  */
-interface CredentialsProvider extends \IteratorAggregate
+interface CredentialsProvider
 {
 }
