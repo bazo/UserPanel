@@ -185,6 +185,7 @@ class Panel extends Control implements IBarPanel
 			$data[$username] = $username;
 		}
 		$data['__guest'] = 'guest';
+		$this->credentials = $data;
 		return $data;
 	}
 
