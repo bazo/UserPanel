@@ -115,9 +115,9 @@ class Panel extends Control implements IBarPanel
 	 * Registers panel to Debug bar
 	 * @return UserPanel;
 	 */
-	public static function register()
+	public static function register(CredentialsProvider $credentialsProvider, IAuthenticator $authenticator)
 	{
-		$panel = new self;
+		$panel = new self($credentialsProvider, $authenticator);
 		Debugger::addPanel($panel);
 		return $panel;
 	}
