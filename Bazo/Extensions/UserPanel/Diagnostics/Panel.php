@@ -17,7 +17,7 @@ use Nette\Security\AuthenticationException;
 use Nette\Latte\Engine;
 
 
-class User extends Control implements IBarPanel
+class Panel extends Control implements IBarPanel
 {
 
 	/** @var \Nette\Http\User */
@@ -78,7 +78,7 @@ class User extends Control implements IBarPanel
 			$form['user']->setDefaultValue('__guest');
 		}
 
-		$template->setFile(__DIR__ . '/bar.user.panel.latte');
+		$template->setFile(__DIR__ . '/panel.latte');
 
 		$template->registerFilter(new Engine());
 		$template->user = $this->user;
