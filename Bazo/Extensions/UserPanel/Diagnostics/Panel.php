@@ -15,7 +15,8 @@ use Nette\Environment;
 use Nette\Diagnostics\IBarPanel;
 use Nette\Security\AuthenticationException;
 use Nette\Latte\Engine;
-
+use Nette\Security\IAuthenticator;
+use Bazo\Extensions\UserPanel\Providers\CredentialsProvider;
 
 class Panel extends Control implements IBarPanel
 {
@@ -32,17 +33,25 @@ class Panel extends Control implements IBarPanel
 	/** @var \Nette\Application\UI\Presenter */
 	private $presenter;
 
+	/** @var CredentialsProvider */
+	private $credentialsProvider;
+	
+	/** @var Authenticator */
+	private $authenticator;
 
 	/**
 	 * @throws \LogicException
 	 */
-	public function __construct()
+	public function __construct(CredentialsProvider $credentialsProvider, IAuthenticator $authenticator)
 	{
 		$this->presenter = $presenter = Environment::getApplication()->presenter;
 		parent::__construct($presenter, 'UserPanel');
 		if ($presenter === NULL) {
 			throw new \LogicException('UserPanel must be registered in BasePresenter::startup(), not in bootstrap.');
 		}
+		
+		$this->credentialsProvider = $credentialsProvider;
+		$this->authenticator = $authenticator;
 		$this->user = Environment::getUser();
 	}
 
@@ -172,8 +181,8 @@ class Panel extends Control implements IBarPanel
 	public function getCredentialsRadioData()
 	{
 		$data = array();
-		foreach ($this->credentials as $username => $password) {
-			$data[$username] = \ucfirst($username);
+		foreach ($this->credentialsProvider->getCredentials() as $username => $password) {
+			$data[$username] = $username;
 		}
 		$data['__guest'] = 'guest';
 		return $data;
@@ -205,18 +214,25 @@ class Panel extends Control implements IBarPanel
 	 */
 	public function onLoginSubmitted(Form $form)
 	{
-		try {
+		try 
+		{
 			$values = $form->getValues();
 			$username = $values['user'];
-			if ($username == '__guest') {
+			if ($username == '__guest') 
+			{
 				$this->user->logout(TRUE);
-			} else {
+			} 
+			else 
+			{
 				$password = $this->credentials[$username];
-				Environment::getUser()->login($username, $password);
+				$this->user->setAuthenticator($this->authenticator);
+				$this->user->login($username, $password);
 			}
 
 			$this->redirect('this');
-		} catch (AuthenticationException $e) {
+		} 
+		catch (AuthenticationException $e) 
+		{
 			$this->presenter->flashMessage($e->getMessage(), 'error');
 			$this->redirect('this');
 		}
