@@ -6,7 +6,8 @@
  * @license MIT
  */
 
-namespace Panel;
+namespace Bazo\Extensions\UserPanel\Diagnostics;
+
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Control;
 use Nette\Diagnostics\Debugger;
